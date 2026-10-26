@@ -1,0 +1,11 @@
+# 피어날 이유 — 실행에 필요한 패키지 (Streamlit Cloud 도 이 파일을 읽어 설치합니다)
+# 개발·시험용(pytest 등)은 requirements-dev.txt 에 있어요.
+# 아래 하한 버전은 개발 때 실제로 시험해 본 버전이에요 (Python 3.12 기준).
+
+streamlit>=1.64.0      # 상단 메뉴(st.navigation position="top"), st.iframe, st.pills 등을 사용
+pandas>=2.2
+numpy>=1.26
+plotly>=6.0            # 분석 대시보드 차트
+folium>=0.20           # 지도 (API 키 없이 동작)
+qrcode[pil]>=8.0       # 꽃 수령 인증 QR 이미지
+python-dotenv>=1.0     # .env 읽기

@@ -1,0 +1,19 @@
+# 피어날 이유 — Streamlit 테마 / 서버 설정
+# 색상 팔레트는 assets/styles.css 의 :root 변수와 맞춰 두었습니다.
+
+[theme]
+base = "light"
+primaryColor = "#3E9B6E"            # 잎사귀 초록
+backgroundColor = "#FFFBF0"         # 크림
+secondaryBackgroundColor = "#FFF3CF" # 데이지 연노랑
+textColor = "#22332C"
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"             # 개발자용 메뉴 숨김 (일반 방문자에게 불필요)
+
+[browser]
+gatherUsageStats = false
+
+[server]
+headless = true

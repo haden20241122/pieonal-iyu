@@ -1,0 +1,5 @@
+# 개발·시험용 — 배포(Streamlit Cloud)에는 필요 없어요.
+-r requirements.txt
+
+pytest>=8.0
+watchdog>=4.0     # 코드를 고치면 화면이 자동으로 새로고침되게 해줘요 (없으면 서버를 다시 켜야 반영되는 경우가 있어요)
