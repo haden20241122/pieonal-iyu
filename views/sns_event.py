@@ -8,15 +8,9 @@ from config import pages as P
 
 event = C.SNS_EVENT
 
-layout.page_header(event["eyebrow"], event["title"], "건강검진 후, 나의 ‘피어날 이유’를 SNS에 남겨주세요.", icon="📣")
+layout.page_header(event["eyebrow"], event["title"], "검진을 마쳤다면, 나의 ‘피어날 이유’를 한 줄만 남겨주세요.", icon="📣")
 
-if not event["verified"]:
-    layout.notice(
-        "이벤트 세부 내용(기간·인증 방법·혜택)은 <b>예시</b>예요. 운영팀에서 확정하면 "
-        "<code>config/campaign.py</code> 의 <code>SNS_EVENT</code> 를 수정해주세요.",
-        kind="warn",
-        icon="🧪",
-    )
+layout.notice("SNS 이벤트는 <b>나이와 상관없이</b> 건강검진을 받은 누구나 참여할 수 있어요.", kind="ok", icon="🙌")
 
 
 def _card(card: dict) -> str:
@@ -42,5 +36,5 @@ st.write("")
 if C.SNS_ACCOUNT_URL:
     st.link_button("공식 SNS 계정 바로가기 →", C.SNS_ACCOUNT_URL, type="primary")
 else:
-    st.caption("공식 SNS 계정은 곧 공개돼요. 공개되면 이곳에 바로가기 버튼이 나타나요.")
-st.page_link(P.FLOWER_SHOPS, label="💐 꽃 받으러 가기 (인증 꽃집 찾기)")
+    st.caption("해시태그를 검색하면 다른 분들의 ‘피어날 이유’도 볼 수 있어요.")
+layout.cta_link(P.FLOWER_SHOPS, "💐 꽃 받으러 가기 (꽃집 찾기) →", "sns-flowers")

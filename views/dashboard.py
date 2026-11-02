@@ -11,7 +11,7 @@ from utils import analytics as A
 layout.page_header(
     "ANALYTICS",
     "캠페인 효과 분석",
-    "규칙 기반 메시지와 AI 생성 메시지의 반응을 비교하고, 사전·사후 변화를 살펴봐요.",
+    "만 19~29세 청년을 대상으로, 규칙 기반 메시지와 AI 생성 메시지의 반응을 비교하고 사전·사후 변화를 살펴봐요.",
     icon="📊",
 )
 

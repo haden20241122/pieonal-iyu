@@ -6,23 +6,37 @@
 import streamlit as st
 
 from components import layout
+from components.age_checker import get_my_age
 from components.stepper import render_stepper
 from components.survey_form import render_survey_form
 from config import campaign as C
 from config import pages as P
 from config import settings
+from data.health_content import is_target_age
 from data.survey_questions import POST_QUESTIONS, PRE_QUESTIONS
 from utils import qr, state, voucher_store
 
 layout.page_header(
     "SURVEY",
     "사전·사후 설문조사",
-    "설문 두 번과 건강검진 한 번이면 데이지를 받을 준비가 끝나요.",
+    "설문 두 번, 검진 한 번이면 데이지 받을 준비가 끝나요.",
     icon="📝",
 )
 
 progress = state.get_progress()
 statuses = progress.statuses()
+
+# 꽃 받기 이벤트만 만 19~29세 대상이에요. 홈에서 나이를 알려준 경우에만 확인할 수 있어요.
+_my_age = get_my_age()
+not_eligible = _my_age is not None and not is_target_age(_my_age)
+if not_eligible:
+    layout.notice(
+        f"꽃 받기 이벤트는 {C.TARGET_LABEL} 청년이 대상이라, 만 {_my_age}세는 꽃 수령 QR을 발급받을 수 없어요. "
+        "건강검진 정보와 SNS 이벤트는 누구나 이용할 수 있어요.",
+        kind="warn",
+        icon="💬",
+    )
+
 render_stepper(progress)
 st.write("")
 
@@ -49,7 +63,7 @@ def _survey_block(kind: str, intro: tuple[str, str], url: str, questions: list[d
     if url:  # 실제 Google Forms 등 외부 설문
         st.link_button(f"{label} 설문 시작하기", url, type="primary", disabled=locked)
         st.caption("설문을 제출한 뒤 이 페이지로 돌아와 아래 버튼을 눌러주세요.")
-        if st.button("설문을 마쳤어요 (완료 처리)", key=f"{kind}_confirm", disabled=locked):
+        if st.button("✅ 설문 마쳤어요!", key=f"{kind}_confirm", disabled=locked):
             st.session_state[done_key] = True
             st.rerun()
         return
@@ -83,7 +97,7 @@ with st.container(key=f"card-checkup-{statuses[1]}"):
         st.link_button("내 건강검진 결과 확인하기 →", C.NHIS_RESULT_URL)
     else:
         st.page_link(P.HEALTH, label="🔎 가까운 검진기관 찾아보기")
-        if st.button("건강검진을 받았어요", type="primary", key="checkup_confirm", disabled=statuses[1] == "locked"):
+        if st.button("🩺 검진 받았어요!", type="primary", key="checkup_confirm", disabled=statuses[1] == "locked"):
             st.session_state.checkup_done = True
             st.rerun()
         if statuses[1] == "locked":
@@ -107,7 +121,7 @@ with st.container(key=f"card-qr-{statuses[3]}"):
 
     if not progress.surveys_done:
         st.html('<p class="pr-quote">사전·사후 설문을 모두 마치면<br>꽃 수령 인증 QR을 발급받을 수 있어요.</p>')
-        st.button("꽃 수령 인증 QR 발급하기", key="qr_issue_locked", disabled=True)
+        st.button("🎁 꽃 받을 QR 만들기", key="qr_issue_locked", disabled=True)
 
     elif voucher is None or (voucher.is_expired):
         if voucher is not None:
@@ -117,7 +131,7 @@ with st.container(key=f"card-qr-{statuses[3]}"):
                 f'<div class="pr-celebrate">🎉 캠페인 참여가 완료되었습니다!</div>'
                 f'<p class="pr-quote">이제 가까운 서울시 인증 꽃집에서<br>{C.FLOWER_NAME}를 받아가세요.</p>'
             )
-        if st.button("꽃 수령 인증 QR 발급하기", type="primary", key="qr_issue"):
+        if st.button("🎁 꽃 받을 QR 만들기", type="primary", key="qr_issue", disabled=not_eligible):
             new_voucher = voucher_store.issue(progress.pre, progress.post)
             st.session_state.voucher_code = new_voucher.code
             st.rerun()

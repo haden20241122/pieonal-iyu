@@ -28,10 +28,11 @@ navigation = st.navigation(
     {
         "": [
             st.Page(P.HOME, title="홈", icon="🌼", default=True),
-            st.Page(P.HEALTH, title="건강검진 알아보기", icon="🩺", url_path="health"),
-            st.Page(P.SURVEY, title="설문·꽃 인증", icon="📝", url_path="survey"),
+            st.Page(P.HEALTH, title="검진 알아보기", icon="🩺", url_path="health"),
+            st.Page(P.SURVEY, title="설문하고 꽃 받기", icon="📝", url_path="survey"),
             st.Page(P.SNS, title="SNS 이벤트", icon="📣", url_path="sns"),
-            st.Page(P.FLOWER_SHOPS, title="인증 꽃집", icon="💐", url_path="flowers"),
+            st.Page(P.FLOWER_SHOPS, title="꽃집 찾기", icon="💐", url_path="flowers"),
+            st.Page(P.FAQ, title="FAQ", icon="❓", url_path="faq"),
         ],
         "운영": [
             st.Page(P.SHOP_VERIFY, title="꽃집 QR 인증", icon="✅", url_path="shop"),

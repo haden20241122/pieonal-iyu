@@ -14,6 +14,7 @@ PAGES = [
     "views/survey.py",
     "views/sns_event.py",
     "views/flower_shops.py",
+    "views/faq.py",
     "views/shop_verify.py",
     "views/dashboard.py",
 ]

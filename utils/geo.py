@@ -132,6 +132,11 @@ def default_location() -> GeoResult:
     return GeoResult("서울시청 부근", lat, lon, False, "default")
 
 
+def location_from_place(name: str, lat: float, lon: float) -> GeoResult:
+    """특정 장소(예: 검진 받은 병원)를 검색 위치로 쓰기 위한 변환."""
+    return GeoResult(f"{name} 근처", lat, lon, True, "clinic")
+
+
 def mock_current_location() -> GeoResult:
     """'현재 위치' 버튼용 모의 위치 (실제 GPS 아님)."""
     lat, lon = SEOUL_CITY_HALL

@@ -46,6 +46,12 @@ def notice(text: str, kind: str = "info", icon: str = "ℹ️") -> None:
     st.html(f'<div class="pr-notice pr-notice--{kind}"><span aria-hidden="true">{icon}</span><div>{text}</div></div>')
 
 
+def cta_link(page: str, label: str, key: str) -> None:
+    """눌러야 하는 '다음 행동' 버튼 (노란 큰 버튼). key 는 화면 안에서 겹치지 않게 지어주세요."""
+    with st.container(key=f"cta-{key}"):
+        st.page_link(page, label=label)
+
+
 def source_line(source_key: str, verified: bool) -> str:
     """콘텐츠 출처 표시. 공식 자료로 확인되지 않은 내용에는 '예시' 배지가 붙습니다."""
     src = SOURCES.get(source_key, {"name": source_key, "url": ""})
@@ -62,7 +68,7 @@ def chips(items: list[str], kind: str = "leaf") -> str:
 def footer() -> None:
     demo = (
         '<p class="pr-footer__demo">현재 <b>프로토타입(데모) 모드</b>입니다. '
-        "지도의 꽃집·검진기관은 샘플 데이터이며, 일부 안내 문구는 공식 자료 확인 전 예시입니다.</p>"
+        "지도의 꽃집·검진기관은 샘플 데이터입니다.</p>"
         if DEMO_MODE
         else ""
     )
@@ -70,9 +76,9 @@ def footer() -> None:
         f"""
         <footer class="pr-footer">
           <div class="pr-footer__brand">🌼 {h(C.CAMPAIGN_NAME)} <span>{h(C.CAMPAIGN_KICKER)}</span></div>
-          <p>건강을 확인하는 작은 실천이 나의 일상을 피어나게 합니다.</p>
-          <p class="pr-footer__small">이 사이트는 일반적인 건강 정보를 제공하며 진단이나 치료를 대신하지 않습니다.
-          개인의 건강정보(검진 결과 등)는 이 사이트에 저장하지 않아요.</p>
+          <p>{h(C.CAMPAIGN_TAGLINE[0])} {h(C.CAMPAIGN_TAGLINE[1])}</p>
+          <p class="pr-footer__small">이 사이트는 건강 정보를 안내할 뿐, 진단이나 치료를 대신하지 않아요.
+          검진 결과 같은 개인 건강정보는 저장하지 않아요.</p>
           {demo}
         </footer>
         """

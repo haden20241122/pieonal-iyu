@@ -14,5 +14,6 @@ HEALTH = "views/health_info.py"
 SURVEY = "views/survey.py"
 SNS = "views/sns_event.py"
 FLOWER_SHOPS = "views/flower_shops.py"
-SHOP_VERIFY = "views/shop_verify.py"  # 꽃집 직원용 (/shop)
+FAQ = "views/faq.py"
+SHOP_VERIFY ="views/shop_verify.py"  # 꽃집 직원용 (/shop)
 DASHBOARD = "views/dashboard.py"  # 운영·분석용

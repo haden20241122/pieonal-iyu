@@ -17,8 +17,9 @@ def render_hero() -> None:
             <div class="pr-hero__text">
               <span class="pr-eyebrow pr-eyebrow--pill">{h(C.CAMPAIGN_KICKER)}</span>
               <h1 class="pr-hero__title">피어날 <em>이유</em></h1>
+              <p class="pr-hero__sub">{h(C.CAMPAIGN_TAGLINE[0])}<br>{h(C.CAMPAIGN_TAGLINE[1])}</p>
               <p class="pr-hero__lead">건강검진하고 <b>꽃 받아가세요!</b></p>
-              <p class="pr-hero__tag">{h(C.CAMPAIGN_TAGLINE[0])}<br>{h(C.CAMPAIGN_TAGLINE[1])}</p>
+              <p class="pr-hero__target">🌱 {h(C.TARGET_MESSAGE)}</p>
               <div class="pr-hero__edition"><span>{h(C.FLOWER_EDITION)}</span><b>{h(C.FLOWER_NAME)} {C.FLOWER_EMOJI}</b></div>
             </div>
             """
@@ -47,10 +48,10 @@ def render_flow_strip() -> None:
         <div class="pr-flow" role="list">
           <div class="pr-flow__item" role="listitem"><div class="pr-flow__icon">🩺</div><b>건강검진</b><span>받고</span></div>
           <div class="pr-flow__arrow" aria-hidden="true">→</div>
-          <div class="pr-flow__item" role="listitem"><div class="pr-flow__icon">📝</div><b>설문</b><span>참여하면</span></div>
+          <div class="pr-flow__item" role="listitem"><div class="pr-flow__icon">📝</div><b>설문</b><span>두 번 하면</span></div>
           <div class="pr-flow__arrow" aria-hidden="true">→</div>
           <div class="pr-flow__item" role="listitem"><div class="pr-flow__icon">🌼</div><b>꽃</b><span>받아가요</span></div>
         </div>
-        <p class="pr-flow__caption">사전·사후 설문(각 약 2분)을 마치면, 서울시 인증 꽃집에서 데이지를 받을 수 있어요.</p>
+        <p class="pr-flow__caption">설문은 검진 전후로 한 번씩, 각각 2분쯤 걸려요. 끝나면 서울 인증 꽃집에서 데이지를 받아가세요.</p>
         """
     )

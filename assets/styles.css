@@ -224,7 +224,30 @@ header[data-testid="stHeader"]::before {
 }
 .pr-hero__lead { font-size: clamp(1.3rem, 3.6vw, 1.9rem); font-weight: 900; margin: .3rem 0 .6rem; color: var(--ink); }
 .pr-hero__lead b { color: var(--leaf-deep); }
-.pr-hero__tag { color: var(--ink-soft); font-size: 1.05rem; margin: 0 0 1.1rem; }
+.pr-hero__sub { color: var(--ink-soft); font-size: clamp(1.15rem, 3vw, 1.5rem); line-height: 1.5; margin: .2rem 0 1rem; }
+.pr-hero__tag { color: var(--ink-soft); font-size: 1.05rem; margin: 0 0 .6rem; }
+
+/* 홈: 이름에 담은 마음 ('피어날 이유'인 이유) */
+.pr-story {
+  margin: 2rem 0 1.2rem; padding: 1.8rem 1.8rem 1.5rem; border-radius: 32px;
+  background: linear-gradient(160deg, #F2FAF3 0%, #FFFFFF 65%); border: 1px solid var(--line); box-shadow: var(--shadow-sm);
+}
+.stApp .pr-story__title { font-size: clamp(1.7rem, 4.6vw, 2.4rem); margin: .2rem 0 .6rem; padding: 0; }
+.pr-story__lead { color: var(--ink-soft); font-size: 1.05rem; line-height: 1.8; max-width: 42em; margin: 0 0 1.3rem; }
+.pr-story__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.pr-story__item { background: var(--paper); border: 1px solid var(--line); border-radius: 22px; padding: 1.1rem 1.2rem 1.2rem; }
+.pr-story__num {
+  display: inline-grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 50%;
+  background: var(--daisy); font-weight: 900; font-size: .9rem; margin-bottom: .4rem;
+}
+.stApp .pr-story__item h3 { font-size: 1.15rem; margin: .1rem 0 .45rem; padding: 0; }
+.pr-story__item p { margin: 0; color: var(--ink-soft); line-height: 1.75; font-size: .97rem; }
+.pr-story__close { margin: 1.3rem 0 0; font-family: var(--font-display); font-size: clamp(1.2rem, 3.4vw, 1.55rem); color: var(--leaf-deep); text-align: center; }
+@media (max-width: 800px) {
+  .pr-story { padding: 1.3rem 1.1rem 1.2rem; border-radius: 24px; }
+  .pr-story__grid { grid-template-columns: 1fr; }
+}
+.pr-hero__target { color: var(--leaf-deep); font-weight: 700; font-size: .98rem; margin: 0 0 1.1rem; }
 .pr-hero__edition {
   display: inline-flex; align-items: center; gap: .6rem; margin: 0 0 .4rem; padding: .45rem 1rem .45rem .5rem;
   background: var(--paper); border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow-sm);
@@ -246,11 +269,26 @@ header[data-testid="stHeader"]::before {
 @keyframes pr-sway  { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
 @keyframes pr-float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10px) rotate(12deg); } }
 
-.st-key-hero-cta a[data-testid="stPageLink-NavLink"] {
+/* 눌러야 하는 '다음 행동' 버튼 — 노란 큰 버튼 (히어로 · 화면 맨 아래 · 다음 할 일) */
+.st-key-hero-cta a[data-testid="stPageLink-NavLink"],
+[class*="st-key-cta-"] a[data-testid="stPageLink-NavLink"] {
   background: var(--daisy); color: var(--ink); border: 0; box-shadow: 0 4px 0 var(--daisy-deep); font-size: 1.05rem; padding: .7rem 1.8rem;
 }
-.st-key-hero-cta a[data-testid="stPageLink-NavLink"]:hover { background: #FFD25E; transform: translateY(-2px); }
-.st-key-hero-cta a[data-testid="stPageLink-NavLink"] p { font-weight: 900; margin: 0; }
+.st-key-hero-cta a[data-testid="stPageLink-NavLink"]:hover,
+[class*="st-key-cta-"] a[data-testid="stPageLink-NavLink"]:hover { background: #FFD25E; transform: translateY(-2px); box-shadow: 0 6px 0 var(--daisy-deep); }
+.st-key-hero-cta a[data-testid="stPageLink-NavLink"]:active,
+[class*="st-key-cta-"] a[data-testid="stPageLink-NavLink"]:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--daisy-deep); }
+.st-key-hero-cta a[data-testid="stPageLink-NavLink"] p,
+[class*="st-key-cta-"] a[data-testid="stPageLink-NavLink"] p { font-weight: 900; margin: 0; }
+[class*="st-key-cta-"] { margin: .6rem 0 .2rem; }
+
+/* 홈: 내 나이로 검진 확인 */
+.st-key-age-checker {
+  background: linear-gradient(135deg, #FFF6D6 0%, #FFFFFF 70%); border: 1px solid var(--line); border-radius: 28px;
+  padding: 1.3rem 1.5rem 1.1rem; box-shadow: var(--shadow-sm); margin: 1.4rem 0 1rem;
+}
+.pr-agecheck__title { font-size: clamp(1.4rem, 4vw, 1.9rem); margin: .2rem 0 .2rem; padding: 0; }
+.pr-agecheck__desc { color: var(--ink-soft); margin: 0 0 .4rem; }
 
 /* ── 건강검진 → 설문 → 꽃 (5초 이해용) ────────────────── */
 .pr-flow {

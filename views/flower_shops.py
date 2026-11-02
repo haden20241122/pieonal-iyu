@@ -3,6 +3,7 @@ import streamlit as st
 
 from components import flower_card, layout
 from components.place_finder import render_place_finder
+from config import campaign as C
 from config import pages as P
 
 layout.page_header(
@@ -10,6 +11,12 @@ layout.page_header(
     "서울시 인증 꽃집 🌼",
     "건강검진과 설문조사를 완료했다면<br>가까운 인증 꽃집에서 캠페인 꽃을 받아가세요.",
     icon="💐",
+)
+
+layout.notice(
+    f"꽃 받기 이벤트는 <b>{C.TARGET_LABEL} 청년</b>이 대상이에요. 꽃집 위치와 지도는 나이와 상관없이 누구나 볼 수 있어요.",
+    kind="info",
+    icon="🌼",
 )
 
 # ── 꽃 받는 방법 ─────────────────────────────────────────
@@ -26,7 +33,7 @@ st.html(
     """
 )
 st.write("")
-st.page_link(P.SURVEY, label="📝 설문하고 인증 QR 받으러 가기 →")
+layout.cta_link(P.SURVEY, "📝 설문하고 꽃 받을 QR 만들기 →", "flowers-survey")
 
 # ── 지도 검색 ────────────────────────────────────────────
 layout.section_title("가까운 인증 꽃집 찾기", "지역이나 장소를 검색하면 주변 꽃집을 지도에 표시해요. 마커를 누르면 자세한 정보가 나와요.")

@@ -12,7 +12,8 @@ import numpy as np
 import pandas as pd
 
 MESSAGE_TYPES = {"rule": "규칙 기반", "ai": "AI 생성"}
-AGE_GROUPS = ["20대", "30대", "40대", "50대 이상"]
+# 캠페인 대상은 만 19~29세. 공공데이터(5세 단위: 20~24세, 25~29세)와 비교하기 쉽도록 두 구간으로 나눠요.
+AGE_GROUPS = ["19~24세", "25~29세"]
 LAST_CHECKUP = ["1년 이내", "1~2년 전", "2년보다 더 오래전", "받아본 적 없어요"]
 SKIP_REASONS = ["시간이 없어서", "건강하다고 생각해서", "결과가 걱정돼서", "비용이 부담돼서", "어디서 받는지 몰라서", "특별한 이유는 없어요"]
 UNKNOWN_PERSONA = "미상"
@@ -21,8 +22,8 @@ UNKNOWN_PERSONA = "미상"
 SCHEMA = [
     ("response_id", "문자", "익명 응답 ID (개인정보 넣지 않기)", False),
     ("week", "정수", "응답 주차 (1부터)", False),
-    ("persona", "문자", "페르소나 (예: 바쁜 직장인)", False),
-    ("age_group", "문자", "20대 / 30대 / 40대 / 50대 이상", True),
+    ("persona", "문자", "페르소나 (예: 바쁜 사회초년생)", False),
+    ("age_group", "문자", " / ".join(AGE_GROUPS) + " (캠페인 대상: 만 19~29세)", True),
     ("last_checkup", "문자", "마지막 검진 시기 (" + " / ".join(LAST_CHECKUP) + ")", True),
     ("skip_reason", "문자", "검진을 미룬 주된 이유", True),
     ("sns_reaction", "숫자", "SNS 반응도 (1~5)", False),
@@ -35,10 +36,8 @@ SCHEMA = [
 REQUIRED = [name for name, _, _, required in SCHEMA if required]
 
 _PERSONAS = {
-    "20대": ["건강 자신 있는 청년", "바쁜 취업 준비생"],
-    "30대": ["바쁜 직장인", "육아로 시간이 없는 부모"],
-    "40대": ["결과가 걱정되는 중장년", "바쁜 직장인"],
-    "50대 이상": ["정보가 낯선 시니어", "가족을 챙기는 중장년"],
+    "19~24세": ["건강 자신 있는 대학생", "바쁜 취업 준비생"],
+    "25~29세": ["바쁜 사회초년생", "이직·자격증을 준비하는 청년"],
 }
 _RULE_MESSAGES = [
     "올해 건강검진 대상이에요. 검진 받고 데이지 받아가세요.",
@@ -54,12 +53,12 @@ _AI_MESSAGES = [
 def make_mock_responses(n: int = 320, seed: int = 2026) -> pd.DataFrame:
     """화면 시연용 가상 응답. 메시지 효과는 일부러 작고 엇갈리게 설정 — 어떤 결론도 뒷받침하지 않아요."""
     rng = np.random.default_rng(seed)
-    age = rng.choice(AGE_GROUPS, size=n, p=[0.27, 0.27, 0.24, 0.22])
+    age = rng.choice(AGE_GROUPS, size=n, p=[0.5, 0.5])
     message = rng.choice(["rule", "ai"], size=n)
     week = rng.integers(1, 9, size=n)
 
-    age_shift = np.array([{"20대": -0.35, "30대": -0.1, "40대": 0.1, "50대 이상": 0.3}[a] for a in age])
-    ai_shift = np.array([{"20대": 0.25, "30대": 0.1, "40대": -0.05, "50대 이상": 0.15}[a] for a in age])
+    age_shift = np.array([{"19~24세": -0.2, "25~29세": 0.1}[a] for a in age])
+    ai_shift = np.array([{"19~24세": 0.25, "25~29세": 0.05}[a] for a in age])
     effect = np.where(message == "ai", ai_shift, 0.0)
 
     pre = np.clip(np.rint(rng.normal(3.0 + age_shift, 0.95)), 1, 5)
@@ -67,10 +66,10 @@ def make_mock_responses(n: int = 320, seed: int = 2026) -> pd.DataFrame:
     participated = rng.random(n) < 1 / (1 + np.exp(-(-0.9 + 0.55 * (post - 3) + 0.3 * effect)))
     sns = np.clip(np.rint(rng.normal(2.8 + 0.2 * (pre - 3), 1.1)), 1, 5)
 
-    last_p = {"20대": [.25, .20, .20, .35], "30대": [.35, .25, .20, .20], "40대": [.50, .25, .15, .10], "50대 이상": [.65, .20, .10, .05]}
+    last_p = {"19~24세": [.20, .20, .20, .40], "25~29세": [.30, .25, .20, .25]}
     reason_p = {
-        "20대": [.22, .30, .10, .10, .12, .16], "30대": [.38, .14, .12, .12, .10, .14],
-        "40대": [.30, .14, .24, .10, .10, .12], "50대 이상": [.14, .12, .22, .12, .26, .14],
+        "19~24세": [.22, .30, .10, .10, .12, .16],
+        "25~29세": [.38, .14, .12, .12, .10, .14],
     }
     persona = [rng.choice(_PERSONAS[a]) for a in age]
     last = [rng.choice(LAST_CHECKUP, p=last_p[a]) for a in age]
@@ -97,7 +96,7 @@ def make_mock_responses(n: int = 320, seed: int = 2026) -> pd.DataFrame:
 
 def template_csv() -> bytes:
     """빈 양식(열 이름 + 예시 1줄). 엑셀에서 한글이 깨지지 않도록 BOM 을 붙여요."""
-    example = ["R0001", 1, "바쁜 직장인", "30대", LAST_CHECKUP[1], SKIP_REASONS[0], 3, "ai", "예시 메시지", 3, 4, "TRUE"]
+    example = ["R0001", 1, "바쁜 사회초년생", "25~29세",LAST_CHECKUP[1], SKIP_REASONS[0], 3, "ai", "예시 메시지", 3, 4, "TRUE"]
     frame = pd.DataFrame([example], columns=[name for name, *_ in SCHEMA])
     return frame.to_csv(index=False).encode("utf-8-sig")
 
@@ -131,7 +130,10 @@ def load_uploaded_csv(raw: bytes) -> tuple[pd.DataFrame | None, list[str]]:
         frame[col] = pd.to_numeric(frame[col], errors="coerce")
     frame["participated"] = _to_bool(frame["participated"])
     frame = frame.dropna(subset=["intent_pre", "intent_post"])
-    frame = frame[frame["age_group"].isin(AGE_GROUPS)]
+    bad_age = ~frame["age_group"].isin(AGE_GROUPS)
+    if bad_age.any():
+        problems.append(f"age_group 이 {' / '.join(AGE_GROUPS)} 가 아닌 {int(bad_age.sum())}행은 제외했어요. (캠페인 대상은 만 19~29세예요)")
+        frame = frame[~bad_age]
 
     for col, default in (("persona", UNKNOWN_PERSONA), ("week", 1), ("sns_reaction", np.nan), ("message_text", ""), ("response_id", "")):
         if col not in frame.columns:

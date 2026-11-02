@@ -96,7 +96,7 @@ def test_template_csv_roundtrips_through_loader():
 
 
 def test_upload_missing_required_columns_is_rejected():
-    raw = "age_group,message_type\n20대,ai\n".encode("utf-8")
+    raw = "age_group,message_type\n19~24세,ai\n".encode("utf-8")
     loaded, problems = analytics.load_uploaded_csv(raw)
     assert loaded is None and "필수 열" in problems[0]
 
@@ -118,3 +118,78 @@ def test_aggregations_have_expected_shape():
     assert analytics.reason_share(frame)["비율(%)"].sum() == pytest.approx(100)
     assert list(analytics.last_checkup_share(frame)["마지막 검진"]) == analytics.LAST_CHECKUP
     assert isinstance(analytics.kpis(frame)["rate"], float)
+
+
+def test_location_from_place_is_used_as_search_center():
+    location = geo.location_from_place("샘플병원", 37.5, 127.0)
+    assert location.label == "샘플병원 근처" and location.kind == "clinic" and location.matched
+    nearby = places.find_nearby("flower", location.lat, location.lon, limit=3)
+    assert nearby and nearby == sorted(nearby, key=lambda p: p.distance_km)
+
+
+@pytest.mark.parametrize("age,expected", [(None, False), (18, False), (19, True), (24, True), (29, True), (30, False)])
+def test_target_age_is_19_to_29(age, expected):
+    from data import health_content as D
+
+    assert D.is_target_age(age) is expected
+
+
+def _texts(age):
+    from data import health_content as D
+
+    guide = D.my_age_guide(age)
+    return " ".join(guide["screenings"]), " ".join(guide["extras"]), guide
+
+
+@pytest.mark.parametrize("age", [0, 3, 10, 18, 19, 20, 24, 29, 35, 40, 54, 56, 66, 70, 80, 95, 120])
+def test_every_age_gets_a_guide(age):
+    """어느 나이든 오류 없이 안내가 나와요 (꽃 받기만 19~29세로 한정)."""
+    screenings, extras, guide = _texts(age)
+    assert guide["eyebrow"] == f"만 {age}세" and guide["screenings"], f"만 {age}세에 해당하는 검진이 하나도 없어요"
+
+
+def test_age_rules_follow_nhis_standards():
+    # 만 19세: 직장가입자·세대주만 대상일 수 있고 20세부터 정신건강·자궁경부암이 해당
+    s19, e19, g19 = _texts(19)
+    assert "세대원" in s19 and "자궁경부암" not in s19 and not g19["extras"]
+    # 20대: 이상지질혈증은 남성 24세부터
+    _, e23, _ = _texts(23)
+    _, e24, _ = _texts(24)
+    assert "이상지질혈증" not in e23 and "이상지질혈증" in e24 and "정신건강검사" in e23
+    # 40세: 암검진 시작 + 40세 한정 항목(B형간염 등)
+    s40, e40, _ = _texts(40)
+    assert "위암" in s40 and "유방암" in s40 and "B형간염" in e40 and "생활습관평가" in e40
+    s41, e41, _ = _texts(41)
+    assert "B형간염" not in e41  # 40세에만 받는 항목
+    # 50세: 대장암, 54~74세: 폐암 고위험군
+    assert "대장암" in _texts(50)[0] and "폐암" not in _texts(50)[0] and "폐암" in _texts(54)[0] and "폐암" not in _texts(75)[0]
+    # 66세 이상: 인지기능장애 검사 · 의료급여 생애전환기검진
+    s66, e66, _ = _texts(66)
+    assert "인지기능장애" in e66 and "생애전환기" in s66 and "폐기능" in e66
+    # 어린이·학생
+    assert "영유아" in _texts(2)[0] and "학생" in _texts(12)[0]
+
+
+def test_next_change_points_to_the_next_milestone():
+    from data import health_content as D
+
+    assert D.next_change(19)[0] == 20
+    age, names = D.next_change(30)
+    assert age == 35 and any("정신건강검사" in n for n in names)
+    assert D.next_change(120) is None
+    assert "다음 변화: 만 40세부터" in D.my_age_guide(36)["tip"]
+
+
+@pytest.mark.parametrize("age,band", [(None, None), (5, "만 18세 이하"), (19, "만 19세"), (25, "20대"), (39, "30대"), (49, "40대"), (59, "50대"), (65, "60대"), (70, "70세 이상"), (101, "70세 이상")])
+def test_band_for_age(age, band):
+    from data import health_content as D
+
+    assert D.band_for_age(age) == band
+
+
+def test_every_band_has_a_guide():
+    from data import health_content as D
+
+    for name in D.AGE_BANDS:
+        guide = D.band_guide(name)
+        assert guide["eyebrow"] == name and guide["screenings"]

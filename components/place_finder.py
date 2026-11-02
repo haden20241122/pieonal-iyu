@@ -9,6 +9,7 @@ import streamlit as st
 
 from components.layout import badge, h
 from components.map_view import hours_label, link_html, render_place_map
+from config import pages as P
 from utils import geo, places as places_util
 from utils.places import Place
 
@@ -40,6 +41,24 @@ def _card(place: Place, kind: str) -> str:
     """
 
 
+def _render_flower_shortcut(clinics: list[Place], key: str) -> None:
+    """검진 받은 병원을 고르면, 그 병원 위치를 기준으로 인증 꽃집 화면을 열어줘요."""
+    by_id = {p.id: p for p in clinics}
+    with st.container(key=f"{key}-flower-shortcut"):
+        st.html('<p style="margin:1rem 0 .2rem"><b>💐 검진을 받았나요? 그 병원 근처에서 꽃집을 찾아보세요</b></p>')
+        picked_col, button_col = st.columns([3, 1.6], vertical_alignment="bottom")
+        picked_id = picked_col.selectbox(
+            "검진 받은 병원",
+            list(by_id),
+            format_func=lambda pid: f"{by_id[pid].name} ({by_id[pid].district})",
+            key=f"{key}_picked_clinic",
+        )
+        if button_col.button("💐 근처 꽃집 찾기", type="primary", key=f"{key}_to_flowers", use_container_width=True):
+            clinic = by_id[picked_id]
+            st.session_state["flower_location"] = geo.location_from_place(clinic.name, clinic.lat, clinic.lon)
+            st.switch_page(P.FLOWER_SHOPS)
+
+
 def render_place_finder(kind: str, key: str, example_hint: str, limit: int = 8) -> None:
     text = _TEXT[kind]
     loc_key = f"{key}_location"
@@ -68,6 +87,8 @@ def render_place_finder(kind: str, key: str, example_hint: str, limit: int = 8) 
     location: geo.GeoResult = st.session_state[loc_key]
     if location.kind == "default":
         st.caption("검색어를 입력하지 않으면 서울시청 부근을 기준으로 보여드려요.")
+    elif location.kind == "clinic" and kind == "flower":
+        st.caption("검진 받은 병원을 기준으로 보여드려요. 다른 곳을 보려면 위에서 지역을 검색해보세요.")
     nearby = places_util.find_nearby(kind, location.lat, location.lon, limit=limit)  # type: ignore[arg-type]
     if not nearby:
         st.info(f"표시할 {text['noun']} 정보가 아직 없어요.")
@@ -81,4 +102,6 @@ def render_place_finder(kind: str, key: str, example_hint: str, limit: int = 8) 
             "실제 API를 연결하면 진짜 정보로 바뀌어요.</div></div>"
         )
     render_place_map(nearby, location, kind)
+    if kind == "clinic":
+        _render_flower_shortcut(nearby, key)
     st.html('<div class="pr-grid" style="margin-top:1rem">' + "".join(_card(p, kind) for p in nearby) + "</div>")

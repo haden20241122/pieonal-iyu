@@ -1,13 +1,16 @@
 """홈 — 캠페인 소개 → 핵심 버튼 4개 → 데이지 소개."""
 import streamlit as st
 
-from components import flower_card, hero, layout, petals
+from components import age_checker, flower_card, hero, layout, next_step, petals, story
 from config import campaign as C
 
 hero.render_hero()
+story.render_name_story()  # 왜 '피어날 이유'인지
+age_checker.render_age_checker()  # 나이를 입력하면 바로 내 검진 안내
 hero.render_flow_strip()
+next_step.render_next_step()  # 캠페인을 시작한 사람에게만: 다음에 할 일
 
-layout.section_title("지금, 어디부터 시작해볼까요?", "꽃잎을 눌러 원하는 곳으로 이동하세요.")
+layout.section_title("어디부터 볼까요?", "궁금한 곳부터 눌러보세요.")
 petals.render_petal_menu()
 
 layout.section_title("건강검진하고 받는 꽃")
