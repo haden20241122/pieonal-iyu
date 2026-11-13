@@ -68,7 +68,7 @@ def chips(items: list[str], kind: str = "leaf") -> str:
 def footer() -> None:
     demo = (
         '<p class="pr-footer__demo">현재 <b>프로토타입(데모) 모드</b>입니다. '
-        "지도의 꽃집·검진기관은 샘플 데이터입니다.</p>"
+        "지도의 꽃집은 샘플 데이터입니다.</p>"
         if DEMO_MODE
         else ""
     )

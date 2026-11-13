@@ -127,6 +127,46 @@ def search_location(query: str) -> GeoResult | None:
     return None
 
 
+SEOUL_DISTRICTS = tuple(_DISTRICTS)  # 서울 25개 자치구 이름
+
+
+def district_location(gu: str) -> GeoResult:
+    """자치구 중심 위치 (구 선택 탭용)."""
+    lat, lon = _DISTRICTS[gu]
+    return GeoResult(gu, lat, lon, True, "district")
+
+
+def search_in_seoul(query: str, gu: str | None = None) -> GeoResult | None:
+    """서울 안(gu 가 있으면 그 구 안)에서만 장소를 찾아요 (카카오 로컬 API). 키가 없거나 못 찾으면 None."""
+    import json
+    import urllib.parse
+    import urllib.request
+
+    from config import settings
+
+    q = re.sub(r"^(서울특별시|서울시|서울)\s*", "", (query or "").strip())
+    if not q:
+        return None
+    if q in _DISTRICTS:  # '강남구' 처럼 구 이름만 입력하면 구 중심으로
+        return district_location(q)
+    if not settings.KAKAO_REST_API_KEY:
+        return None
+    url = "https://dapi.kakao.com/v2/local/search/keyword.json?" + urllib.parse.urlencode(
+        {"query": f"{gu} {q}" if gu and gu not in q else f"서울 {q}", "size": 10}
+    )
+    req = urllib.request.Request(url, headers={"Authorization": f"KakaoAK {settings.KAKAO_REST_API_KEY}"})
+    try:
+        with urllib.request.urlopen(req, timeout=8) as r:
+            docs = json.loads(r.read().decode("utf-8")).get("documents", [])
+    except Exception:
+        return None
+    for d in docs:
+        addr = d.get("road_address_name") or d.get("address_name", "")
+        if addr.startswith("서울") and (gu is None or f" {gu} " in f" {addr} "):
+            return GeoResult(d["place_name"], float(d["y"]), float(d["x"]), True, "landmark")
+    return None
+
+
 def default_location() -> GeoResult:
     lat, lon = SEOUL_CITY_HALL
     return GeoResult("서울시청 부근", lat, lon, False, "default")

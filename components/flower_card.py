@@ -12,7 +12,7 @@ def render_flower_card() -> None:
     st.html(
         f"""
         <section class="pr-flowercard">
-          <div class="pr-flowercard__art" aria-hidden="true"><img alt="" src="{art.data_uri(art.daisy_svg())}"></div>
+          <div class="pr-flowercard__art" aria-hidden="true"><img alt="" src="{art.data_uri(art.daisy_bouquet_svg())}"></div>
           <div>
             <div class="pr-eyebrow">{h(info["kicker"])}</div>
             <h2>{h(info["name"])}</h2>

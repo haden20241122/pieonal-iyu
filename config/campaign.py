@@ -30,8 +30,10 @@ FLOWER_EMOJI = "🌼"
 # ※ 아래 주소는 2026-09-20 에 접속해 정상 응답(200)을 확인했어요.
 #    공단 사이트가 개편되면 바뀔 수 있으니 배포 전에 한 번씩 눌러서 확인하세요.
 NHIS_URL = "https://www.nhis.or.kr"  # 국민건강보험공단
-# 내 건강검진 결과 확인: 건강검진 실시안내 페이지 (사이드 메뉴 '건강검진 결과조회'에서 로그인 후 조회)
-NHIS_RESULT_URL = "https://www.nhis.or.kr/nhis/healthin/wbhaca04500m01.do"
+# 일반건강검진 실시안내 페이지 — 건강정보·FAQ 의 '출처' 링크로 써요 (로그인 불필요한 설명 페이지)
+NHIS_GUIDE_URL = "https://www.nhis.or.kr/nhis/healthin/wbhaca04500m01.do"
+# 내 건강검진 결과 확인: 공단 '건강검진 결과조회' 페이지 (로그인하지 않았으면 공단 로그인 화면이 먼저 나와요)
+NHIS_RESULT_URL = "https://www.nhis.or.kr/nhis/healthin/retrieveHealthinCheckUpTargetResultPerson.do"
 NHIS_FACILITY_SEARCH_URL = "https://www.nhis.or.kr/nhis/healthin/retrieveExmdAdminSearch.do"  # 공단 검진기관 찾기
 NHIS_POLICY_URL = "https://www.nhis.or.kr/nhis/policy/wbhada19700m01.do"  # 제도소개 — 일반건강검진
 NHIS_CANCER_URL = "https://www.nhis.or.kr/nhis/healthin/wbhaca04600m01.do"  # 암검진 실시안내

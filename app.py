@@ -31,6 +31,7 @@ navigation = st.navigation(
             st.Page(P.HEALTH, title="검진 알아보기", icon="🩺", url_path="health"),
             st.Page(P.SURVEY, title="설문하고 꽃 받기", icon="📝", url_path="survey"),
             st.Page(P.SNS, title="SNS 이벤트", icon="📣", url_path="sns"),
+            st.Page(P.CLINICS, title="검진기관 찾기", icon="📍", url_path="clinics"),
             st.Page(P.FLOWER_SHOPS, title="꽃집 찾기", icon="💐", url_path="flowers"),
             st.Page(P.FAQ, title="FAQ", icon="❓", url_path="faq"),
         ],

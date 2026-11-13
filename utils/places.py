@@ -16,8 +16,10 @@ from utils.geo import haversine_km
 
 Kind = Literal["clinic", "flower"]
 
+_REAL_CLINIC_FILE = BASE_DIR / "data" / "seoul_health_facilities.csv"  # scripts/build_seoul_clinics.py 로 생성
 _SAMPLE_FILES = {
-    "clinic": BASE_DIR / "data" / "sample_health_facilities.csv",
+    # 실제 서울 데이터가 있으면 그것을, 없으면 샘플을 읽어요 (실제 파일은 is_sample=FALSE)
+    "clinic": _REAL_CLINIC_FILE if _REAL_CLINIC_FILE.exists() else BASE_DIR / "data" / "sample_health_facilities.csv",
     "flower": BASE_DIR / "data" / "sample_flower_shops.csv",
 }
 

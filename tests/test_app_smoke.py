@@ -13,6 +13,7 @@ PAGES = [
     "views/health_info.py",
     "views/survey.py",
     "views/sns_event.py",
+    "views/clinics.py",
     "views/flower_shops.py",
     "views/faq.py",
     "views/shop_verify.py",

@@ -19,11 +19,11 @@
 """
 from dataclasses import dataclass
 
-from config.campaign import NHIS_CANCER_URL, NHIS_RESULT_URL, NHIS_ROADMAP_URL, TARGET_AGE_MAX, TARGET_AGE_MIN, TARGET_LABEL
+from config.campaign import NHIS_CANCER_URL, NHIS_GUIDE_URL, NHIS_ROADMAP_URL, TARGET_AGE_MAX, TARGET_AGE_MIN, TARGET_LABEL
 
 # ── 출처 목록 ─────────────────────────────────────────────
 SOURCES = {
-    "nhis_general": {"name": "국민건강보험공단 — 일반건강검진 실시안내", "url": NHIS_RESULT_URL},
+    "nhis_general": {"name": "국민건강보험공단 — 일반건강검진 실시안내", "url": NHIS_GUIDE_URL},
     "nhis_cancer": {"name": "국민건강보험공단 — 암검진 실시안내", "url": NHIS_CANCER_URL},
     "nhis_roadmap": {"name": "국민건강보험공단 — 건강검진 로드맵", "url": NHIS_ROADMAP_URL},
 }
@@ -305,6 +305,41 @@ RULES = [
     Rule("인지기능장애 검사(66세 이상, 2년마다)", "extra", "인지기능장애 검사", 66),
     Rule("노인신체기능 검사(66·70·80세)", "extra", "노인신체기능 검사", exact=(66, 70, 80)),
 ]
+
+
+# 연령별 항목(Rule.name) → 위 SCREENINGS 의 상세 설명(항목 이름). 눌러서 펼쳐 볼 때 쓰는 연결표예요.
+# 영유아·학생 검진은 이 사이트에 상세 자료가 아직 없어서 연결하지 않았어요(펼침 없이 요약만 보여줘요).
+NAME_REFS = {
+    "일반건강검진": ("일반건강검진", "공통 검사항목", "검진 받을 때 준비물"),
+    "자궁경부암 검진(여성)": ("자궁경부암 검진",),
+    "위암 검진": ("위암 검진",),
+    "유방암 검진(여성)": ("유방암 검진",),
+    "간암 검진(고위험군)": ("간암 검진 (고위험군)",),
+    "대장암 검진": ("대장암 검진",),
+    "폐암 검진(고위험군)": ("폐암 검진 (고위험군)",),
+    "의료급여 생애전환기검진": ("의료급여 생애전환기검진",),
+    "정신건강검사(우울증)": ("정신건강검사(우울증)",),
+    "조기정신증 검사": ("조기정신증 검사",),
+    "이상지질혈증 검사(남성)": ("이상지질혈증 검사",),
+    "이상지질혈증 검사(여성)": ("이상지질혈증 검사",),
+    "B형간염 검사": ("B형간염 · C형간염 검사",),
+    "C형간염 검사": ("B형간염 · C형간염 검사",),
+    "생활습관평가": ("생활습관평가",),
+    "치면세균막 검사": ("치면세균막 검사",),
+    "폐기능 검사": ("폐기능 검사",),
+    "골밀도 검사(여성)": ("골밀도 검사",),
+    "인지기능장애 검사": ("인지기능장애 검사",),
+    "노인신체기능 검사": ("노인신체기능 검사",),
+}
+
+
+def detail_items(rule_text: str) -> list[dict]:
+    """연령별 항목 문구(Rule.text)에 연결된 상세 설명 목록. 연결된 게 없으면 빈 목록."""
+    rule = next((r for r in RULES if r.text == rule_text), None)
+    if rule is None:
+        return []
+    by_name = {item["name"]: item for group in SCREENINGS.values() for item in group}
+    return [by_name[n] for n in NAME_REFS.get(rule.name, ()) if n in by_name]
 
 
 def rules_for(ages) -> tuple[list[str], list[str]]:

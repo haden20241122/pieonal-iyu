@@ -19,8 +19,22 @@ _TEXT = {
 }
 
 
+_SEOUL_GUIDE = """
+<div class="pr-card" style="margin:.2rem 0 1rem">
+  <div class="pr-card__title" style="font-size:1.05rem">🧭 이렇게 이용해보세요</div>
+  <p><b>① 구 고르기</b> — 아래에서 사는 곳(또는 일하는 곳)의 <b>구</b>를 눌러요. 더 가까운 병원을 보고 싶다면 동네·역 이름으로 검색해도 돼요.</p>
+  <p><b>② 지도에서 병원 확인</b> — 🩺 표시가 일반건강검진을 받을 수 있는 병원이에요. 🔵 파란 점은 내가 고른 위치예요. 🩺를 누르면 이름·전화번호가 나와요.</p>
+  <p><b>③ 병원 선택하기</b> — 아래 목록에서 가까운 순서로 볼 수 있어요. ‘길찾기’로 가는 방법도 확인해요.</p>
+  <p style="color:var(--muted);font-size:.88rem;margin-top:.5rem">
+     ※ <b>일반건강검진</b>은 건강보험공단이 지정한 병원에서 받는 기본 검진이에요. 병원 방문 전 <b>전화로 예약과 진료시간</b>을 꼭 확인해주세요.</p>
+</div>
+"""
+
+
 def _card(place: Place, kind: str) -> str:
     tags = [badge("샘플", "sample")] if place.is_sample else []
+    if kind == "clinic" and not place.is_sample:
+        tags.append(badge("일반건강검진 가능", "ok"))
     if kind == "flower":
         tags.append(badge("꽃 수령 가능", "ok") if place.campaign_active else badge("참여 준비 중", "draft"))
     distance = f' · 약 {place.distance_km:.1f}km' if place.distance_km is not None else ""
@@ -59,23 +73,50 @@ def _render_flower_shortcut(clinics: list[Place], key: str) -> None:
             st.switch_page(P.FLOWER_SHOPS)
 
 
-def render_place_finder(kind: str, key: str, example_hint: str, limit: int = 8) -> None:
+def render_place_finder(kind: str, key: str, example_hint: str, limit: int = 8, region: str | None = None) -> None:
+    """region='서울' 이면 '구 선택 → 동네 검색' 방식으로 서울 안에서만 찾습니다."""
     text = _TEXT[kind]
     loc_key = f"{key}_location"
+    seoul = region == "서울"
+    gu_key = f"{key}_gu"
     if loc_key not in st.session_state:
         st.session_state[loc_key] = geo.default_location()
+
+    # ── 서울 안내: 사용 방법 + 구 바로 선택 ──────────────────────
+    if seoul:
+        st.html(_SEOUL_GUIDE)
+        picked = st.pills("📍 ① 어느 구에서 찾을까요?", list(geo.SEOUL_DISTRICTS), key=gu_key)
+        applied_key = f"{key}_gu_applied"
+        if picked != st.session_state.get(applied_key):
+            st.session_state[applied_key] = picked
+            if picked:
+                st.session_state[loc_key] = geo.district_location(picked)
+                st.session_state[f"{key}_query"] = ""  # 구를 바꾸면 이전 검색어는 지워요
 
     # ── 검색 ─────────────────────────────────────────────
     with st.form(f"{key}-search", border=False):
         input_col, button_col = st.columns([4, 1.2], vertical_alignment="bottom")
-        query = input_col.text_input(text["label"], placeholder=example_hint, key=f"{key}_query")
+        label = (
+            f"② {st.session_state.get(gu_key)} 안의 동네·역·건물 이름으로 더 가까운 곳 찾기 (선택)"
+            if seoul and st.session_state.get(gu_key)
+            else ("② 서울 안의 동네·역·건물 이름으로 직접 찾기" if seoul else text["label"])
+        )
+        query = input_col.text_input(label, placeholder=example_hint, key=f"{key}_query")
         submitted = button_col.form_submit_button("🔍 검색", type="primary", use_container_width=True)
-    if st.button("📍 현재 위치로 찾기 (모의 위치)", key=f"{key}_gps", help="실제 GPS 는 사용하지 않고 서울시청 부근을 현재 위치로 가정해요."):
+    if not seoul and st.button("📍 현재 위치로 찾기 (모의 위치)", key=f"{key}_gps", help="실제 GPS 는 사용하지 않고 서울시청 부근을 현재 위치로 가정해요."):
         st.session_state[loc_key] = geo.mock_current_location()
         submitted = False
     elif submitted:
         if not query.strip():
-            st.info(f"검색어를 입력해주세요. 예: {geo.KNOWN_EXAMPLES}")
+            st.info(f"검색어를 입력해주세요. 예: {example_hint.removeprefix('예: ')}")
+        elif seoul:
+            gu = st.session_state.get(gu_key)
+            found = geo.search_in_seoul(query, gu)
+            if found is None:
+                where = gu or "서울"
+                st.warning(f"‘{query.strip()}’ 을(를) {where}에서 찾지 못했어요. {where} 안의 동네·역·건물 이름으로 검색하거나, 위에서 다른 구를 눌러보세요.")
+            else:
+                st.session_state[loc_key] = found
         else:
             found = geo.search_location(query)
             if found is None:
@@ -85,7 +126,9 @@ def render_place_finder(kind: str, key: str, example_hint: str, limit: int = 8) 
 
     # ── 결과 ─────────────────────────────────────────────
     location: geo.GeoResult = st.session_state[loc_key]
-    if location.kind == "default":
+    if location.kind == "default" and seoul:
+        st.caption("지금은 서울시청 근처를 기준으로 보여드려요. 위에서 내가 사는 구를 눌러보세요.")
+    elif location.kind == "default":
         st.caption("검색어를 입력하지 않으면 서울시청 부근을 기준으로 보여드려요.")
     elif location.kind == "clinic" and kind == "flower":
         st.caption("검진 받은 병원을 기준으로 보여드려요. 다른 곳을 보려면 위에서 지역을 검색해보세요.")

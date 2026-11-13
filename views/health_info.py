@@ -1,4 +1,4 @@
-"""건강검진 알아보기 — 검사항목 · 연령별 건강정보 · 검진기관 찾기 · 결과 확인.
+"""건강검진 알아보기 — 검사항목 · 연령별 건강정보 · 결과 확인. (검진기관 찾기는 views/clinics.py)
 
 나이는 이 화면에서 입력받지 않아요. 홈 화면에서 입력한 나이(세션)가 있으면 '내 나이'를 먼저 보여주기만 합니다.
 """
@@ -6,7 +6,6 @@ import streamlit as st
 
 from components import layout
 from components.age_checker import get_my_age, render_age_card
-from components.place_finder import render_place_finder
 from config import campaign as C
 from config import pages as P
 from data import health_content as D
@@ -19,7 +18,7 @@ layout.page_header(
 )
 
 # 4개 화면을 pills 로 전환합니다. (탭 대신 쓰는 이유: 지도는 화면에 보일 때만 그려야 정확하고 빨라요)
-SECTIONS = ["검사항목", "연령별 건강정보", "검진기관 찾기", "결과 확인"]
+SECTIONS = ["검사항목", "연령별 건강정보", "결과 확인"]
 # 홈의 버튼에서 특정 탭으로 바로 들어온 경우 (위젯을 만들기 전에 값을 정해야 해요)
 st.session_state.setdefault("health_section", SECTIONS[0])
 _goto = st.session_state.pop("health_goto", None)
@@ -87,12 +86,7 @@ elif section == "연령별 건강정보":
     if my_age is not None:
         st.caption("정확히 내 나이에 해당하는 검진은 홈 화면의 ‘내 검진 확인하기’에서 볼 수 있어요.")
     layout.notice(D.DISCLAIMER, kind="info", icon="💬")
-# ── 3. 검진기관 찾기 ───────────────────────────────────────
-elif section == "검진기관 찾기":
-    layout.section_title("주변 건강검진기관 찾기", "지역이나 장소를 검색하면 가까운 검진기관을 지도에 표시해요.")
-    render_place_finder("clinic", key="clinic", example_hint="예: 강남구, 홍대입구, 서울시청")
-
-# ── 4. 결과 확인 ───────────────────────────────────────────
+# ── 3. 결과 확인 ───────────────────────────────────────────
 else:
     st.html(
         """
@@ -104,10 +98,11 @@ else:
         """
     )
     st.link_button("📄 내 건강검진 결과 확인하기 →", C.NHIS_RESULT_URL, type="primary")
-    st.caption("국민건강보험공단 ‘건강검진 실시안내’ 페이지로 이동해요. 사이드 메뉴의 ‘건강검진 결과조회’에서 로그인하면 확인할 수 있어요.")
+    st.caption("국민건강보험공단 ‘건강검진 결과조회’ 페이지로 이동해요. 로그인(간편 인증·공동/금융 인증서)하면 내 결과를 확인할 수 있어요.")
 
 # ── 다음 행동 ──────────────────────────────────────────────
 if section == "결과 확인":
     layout.cta_link(P.SURVEY, "📝 결과를 확인했다면, 사후 설문 하러 가기 →", "health-next")
 else:
+    layout.cta_link(P.CLINICS, "📍 가까운 검진기관 찾기 →", "health-clinics")
     layout.cta_link(P.SURVEY, "🌱 검진 받기 전, 사전 설문 시작하기 →", "health-next")

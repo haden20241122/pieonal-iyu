@@ -21,23 +21,49 @@ def get_my_age() -> int | None:
     return int(value) if value is not None else None
 
 
-def render_age_card(guide: dict, label: str) -> None:
-    """나이(구간)별 검진 안내 카드."""
+def _detail_html(item: dict) -> str:
     h = layout.h
-    extras = (
-        layout.chips(guide["extras"], "leaf")
-        if guide["extras"]
-        else '<span style="color:var(--muted)">이 나이에는 따로 받는 추가 항목이 없어요.</span>'
+    return (
+        '<div class="pr-acc__item">'
+        f'<div class="pr-acc__name">{h(item["name"])}</div>'
+        f'<dl><dt>대상</dt><dd>{h(item["target"])}</dd>'
+        f'<dt>설명</dt><dd>{h(item["desc"])}</dd>'
+        f'<dt>비용 안내</dt><dd>{h(item["cost"])}</dd></dl>'
+        f'{layout.source_line(item["source"], item["verified"])}'
+        "</div>"
     )
+
+
+def _accordion(texts: list[str], tone: str, empty: str) -> str:
+    """항목마다 눌러서 펼쳐 보는 목록. 상세 자료가 없는 항목은 펼침 없이 요약만 보여줘요."""
+    if not texts:
+        return f'<p class="pr-acc__empty">{layout.h(empty)}</p>'
+    rows = []
+    for text in texts:
+        details = D.detail_items(text)
+        if details:
+            rows.append(
+                f'<details class="pr-acc pr-acc--{tone}"><summary>{layout.h(text)}</summary>'
+                f'<div class="pr-acc__body">{"".join(_detail_html(d) for d in details)}</div></details>'
+            )
+        else:
+            rows.append(f'<div class="pr-acc pr-acc--{tone} pr-acc--plain"><span>{layout.h(text)}</span></div>')
+    return "".join(rows)
+
+
+def render_age_card(guide: dict, label: str) -> None:
+    """나이(구간)별 검진 안내 카드. 항목을 누르면 대상·검사 내용·비용이 펼쳐져요."""
+    h = layout.h
     st.html(
         f"""
         <div class="pr-card" style="margin-top:.6rem">
           <div class="pr-eyebrow">{h(label)}</div>
           <div class="pr-card__title" style="font-size:1.5rem">{h(guide["headline"])}</div>
-          <dl>
-            <dt>🩺 해당하는 검진</dt><dd>{layout.chips(guide["screenings"], "daisy")}</dd>
-            <dt>📅 나이에 따라 받는 추가 항목</dt><dd>{extras}</dd>
-          </dl>
+          <p class="pr-acc__hint">👆 항목을 누르면 어떤 검사인지, 누가 받는지, 비용은 얼마인지 자세히 볼 수 있어요.</p>
+          <div class="pr-acc__title">🩺 해당하는 검진 <span>{len(guide["screenings"])}개</span></div>
+          {_accordion(guide["screenings"], "daisy", "이 나이에는 해당하는 검진이 없어요.")}
+          <div class="pr-acc__title">📅 나이에 따라 받는 추가 항목 <span>{len(guide["extras"])}개</span></div>
+          {_accordion(guide["extras"], "leaf", "이 나이에는 따로 받는 추가 항목이 없어요.")}
           <p style="margin-top:.9rem">💡 {h(guide["tip"])}</p>
           {layout.source_line(guide["source"], guide["verified"])}
         </div>
@@ -93,4 +119,4 @@ def render_age_checker() -> None:
         if go_info.button("🩺 내 검진 더 자세히 보기", type="primary", key="age_to_info", use_container_width=True):
             _go_health("연령별 건강정보")
         if go_clinic.button("📍 가까운 검진기관 찾기", key="age_to_clinic", use_container_width=True):
-            _go_health("검진기관 찾기")
+            st.switch_page(P.CLINICS)
